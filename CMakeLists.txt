@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(dramsim3)
+project(DramSimulator)
 
 set(default_build_type "Release")
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -25,101 +25,50 @@ target_include_directories(args INTERFACE ext/headers)
 add_library(json INTERFACE)
 target_include_directories(json INTERFACE ext/headers)
 
-# Main DRAMSim Lib
-add_library(dramsim3 STATIC
-    src/bankstate.cc
-    src/channel_state.cc
-    src/command_queue.cc
-    src/common.cc
-    src/configuration.cc
-    src/controller.cc
-    src/dram_system.cc
-    src/hmc.cc
-    src/refresh.cc
-    src/simple_stats.cc
-    src/timing.cc
-    src/memory_system.cc
+# scala jni
+set(JAVA_HOME "/usr/lib/jvm/java-11-openjdk-amd64")
+include_directories(${JAVA_HOME}/include ${JAVA_HOME}/include/linux src)
+
+set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -fPIC")
+
+# Main DramSimulator Lib
+add_library(DramSimulator SHARED
+        src/bankstate.cc
+        src/channel_state.cc
+        src/command_queue.cc
+        src/common.cc
+        src/configuration.cc
+        src/controller.cc
+        src/dram_system.cc
+        src/hmc.cc
+        src/refresh.cc
+        src/simple_stats.cc
+        src/timing.cc
+        src/memory_system.cc
+        src/cosimulation.cc
+        src/DramSimulator_DramSimulator.cpp
 )
 
-if (COSIM)
-    target_sources(dramsim3
-        PRIVATE src/cosimulation.cc
-    )
-endif(COSIM)
 
-if (THERMAL)
-    # dependency check
-    # sudo apt-get install libatlas-base-dev on ubuntu
-    find_package(BLAS REQUIRED)
-    find_package(OpenMP REQUIRED)
-    # YOU need to build superlu on your own. Do the following:
-    # git submodule update --init
-    # cd ext/SuperLU_MT_3.1 && make lib
-    find_library(SUPERLU
-        NAME superlu_mt_OPENMP libsuperlu_mt_OPENMP
-        HINTS ${PROJECT_SOURCE_DIR}/ext/SuperLU_MT_3.1/lib/
-    )
+target_sources(DramSimulator
+        PRIVATE src/cosimulation.cpp)
 
-    target_link_libraries(dramsim3
-        PRIVATE ${SUPERLU} f77blas atlas m ${OpenMP_C_FLAGS}
-    )
-    target_sources(dramsim3
-        PRIVATE src/thermal.cc src/sp_ienv.c src/thermal_solver.c
-    )
-    target_compile_options(dramsim3 PRIVATE -DTHERMAL -D_LONGINT -DAdd_ ${OpenMP_C_FLAGS})
-
-    add_executable(thermalreplay src/thermal_replay.cc)
-    target_link_libraries(thermalreplay dramsim3 inih)
-    target_compile_options(thermalreplay PRIVATE -DTHERMAL -D_LONGINT -DAdd_ ${OpenMP_C_FLAGS})
-endif (THERMAL)
 
 if (CMD_TRACE)
-    target_compile_options(dramsim3 PRIVATE -DCMD_TRACE)
+    target_compile_options(DramSimulator PRIVATE -DCMD_TRACE)
 endif (CMD_TRACE)
 
 if (ADDR_TRACE)
-    target_compile_options(dramsim3 PRIVATE -DADDR_TRACE)
+    target_compile_options(DramSimulator PRIVATE -DADDR_TRACE)
 endif (ADDR_TRACE)
 
 
-target_include_directories(dramsim3 INTERFACE src)
-target_compile_options(dramsim3 PRIVATE -Wall)
-target_link_libraries(dramsim3 PRIVATE inih format)
-set_target_properties(dramsim3 PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}
+target_include_directories(DramSimulator INTERFACE src)
+target_compile_options(DramSimulator PRIVATE -Wall)
+target_link_libraries(DramSimulator PRIVATE inih format)
+set_target_properties(DramSimulator PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY ..
     CXX_STANDARD 11
     CXX_STANDARD_REQUIRED YES
     CXX_EXTENSIONS NO
-)
-
-# trace CPU, .etc
-add_executable(dramsim3main src/main.cc src/cpu.cc)
-target_link_libraries(dramsim3main PRIVATE dramsim3 args)
-target_compile_options(dramsim3main PRIVATE)
-set_target_properties(dramsim3main PROPERTIES
-    CXX_STANDARD 11
-    CXX_STANDARD_REQUIRED YES
-    CXX_EXTENSIONS NO
-)
-
-# Unit testing
-add_library(Catch INTERFACE)
-target_include_directories(Catch INTERFACE ext/headers)
-
-add_executable(dramsim3test EXCLUDE_FROM_ALL
-    tests/test_config.cc
-    tests/test_dramsys.cc
-    tests/test_hmcsys.cc # IDK somehow this can literally crush your computer
-)
-target_link_libraries(dramsim3test Catch dramsim3)
-target_include_directories(dramsim3test PRIVATE src/)
-
-# We have to use this custome command because there's a bug in cmake
-# that if you do `make test` it doesn't build your updated test files
-# so we're stucking with `make dramsim3test` for now
-add_custom_command(
-    TARGET dramsim3test POST_BUILD
-    COMMAND dramsim3test
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    DEPENDS dramsim3test dramsim3
 )

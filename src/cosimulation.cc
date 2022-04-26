@@ -3,7 +3,7 @@
 
 dramsim3::MemorySystem *memory = NULL;
 
-ComplexCoDRAMsim3::ComplexCoDRAMsim3(const std::string &config_file, const std::string &output_dir, uint64_t padding_time) {
+ComplexCoDRAMsim3::ComplexCoDRAMsim3(const std::string &config_file, const std::string &output_dir) {
     if (memory) {
         std::cout << "should only init one memory currently" << std::endl;
         abort();
@@ -12,7 +12,7 @@ ComplexCoDRAMsim3::ComplexCoDRAMsim3(const std::string &config_file, const std::
     memory = new dramsim3::MemorySystem(config_file, output_dir,
         std::bind(&ComplexCoDRAMsim3::callback, this, std::placeholders::_1, false),
         std::bind(&ComplexCoDRAMsim3::callback, this, std::placeholders::_1, true));
-    padding = padding_time;
+    padding = 0;
     std::cout << "DRAMsim3 memory system initialized." << std::endl;
 }
 
