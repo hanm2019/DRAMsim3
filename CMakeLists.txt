@@ -51,7 +51,7 @@ add_library(DramSimulator SHARED
 
 
 target_sources(DramSimulator
-        PRIVATE src/cosimulation.cpp)
+        PRIVATE src/cosimulation.cc)
 
 
 if (CMD_TRACE)

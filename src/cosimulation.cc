@@ -51,9 +51,7 @@ CoDRAMTrans * ComplexCoDRAMsim3::get_write_response(){
 
 CoDRAMTrans * ComplexCoDRAMsim3::get_read_response(){
     CoDRAMTrans* response = resp_read_queue.front();
-    std::cout << "before:" << resp_read_queue.size() << std::endl;
     resp_read_queue.pop();
-    std::cout << "after:" <<resp_read_queue.size() << std::endl;
     return response;
 }
 
