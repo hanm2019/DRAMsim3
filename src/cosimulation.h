@@ -5,29 +5,33 @@
 #include <queue>
 #include <string>
 
-class CoDRAMRequest {
+class CoDRAMTrans {
 public:
     uint64_t address;
     bool is_write;
-    void *meta;
+    uint64_t id;
+    int burstLength;
+    int burstType;
+    int dramBurstLength;
+    int dramBurstOffset;
 
-    CoDRAMRequest() : CoDRAMRequest(0, false, NULL) { }
-    CoDRAMRequest(uint64_t address, bool is_write)
-        : CoDRAMRequest(address, is_write, meta) { }
-    CoDRAMRequest(uint64_t address, bool is_write, void *meta)
-        : address(address), is_write(is_write), meta(meta) { }
-};
+    CoDRAMTrans() : CoDRAMTrans(0, false, 0,0,0,0,0) { }
+    CoDRAMTrans(uint64_t address, bool is_write,  uint64_t id, int burstLength, int burstType,
+                  int dramBurstLength, int dramBurstOffset)
+        : address(address), is_write(is_write),
+        id(id),burstLength(burstLength),
+        burstType(burstType), dramBurstLength(dramBurstLength),
+        dramBurstOffset(dramBurstOffset){ };
 
-
-class CoDRAMResponse {
-public:
-    const CoDRAMRequest *req;
-    uint64_t req_time;
-    uint64_t finish_time;
-    uint64_t resp_time;
-
-    CoDRAMResponse(const CoDRAMRequest *req, uint64_t req_time)
-        : req(req), req_time(req_time) { }
+    CoDRAMTrans(const CoDRAMTrans* trans){
+        this->address = trans->address;
+        this->is_write = trans->is_write;
+        this->id = trans->id;
+        this->burstType = trans->burstType;
+        this->burstLength = trans->burstLength;
+        this->dramBurstOffset = trans->dramBurstOffset;
+        this->dramBurstLength = trans->dramBurstLength;
+    }
 };
 
 
@@ -39,11 +43,17 @@ public:
     // Returns true on success and false on failure.
     virtual bool will_accept(uint64_t address, bool is_write) = 0;
     // Send request to co-sim model.
-    virtual bool add_request(const CoDRAMRequest *request) = 0;
+    virtual bool add_request(const CoDRAMTrans *request) = 0;
+
     // Check whether there is some read response available. Returns NULL on failure.
-    virtual CoDRAMResponse *check_read_response() = 0;
+    virtual bool check_read_response() = 0;
     // Check whether there is some write response available. Returns NULL on failure.
-    virtual CoDRAMResponse *check_write_response() = 0;
+    virtual bool check_write_response() = 0;
+
+    // Check whether there is some read response available. Returns NULL on failure.
+    virtual CoDRAMTrans *get_read_response() = 0;
+    // Check whether there is some write response available. Returns NULL on failure.
+    virtual CoDRAMTrans *get_write_response() = 0;
     // Get DRAM ticks.
     inline uint64_t get_clock_ticks() { return dram_clock; }
 
@@ -51,27 +61,6 @@ protected:
     uint64_t dram_clock;
 };
 
-
-// A simple co-sim model: fixed read latency and zero write latency
-class SimpleCoDRAMsim3 : public CoDRAMsim3 {
-public:
-    SimpleCoDRAMsim3(int latency);
-    // Tick the DRAM model.
-    void tick();
-    // Returns true on success and false on failure.
-    bool will_accept(uint64_t address, bool is_write);
-    // Send request to CoDRAM model.
-    bool add_request(const CoDRAMRequest *request);
-    // Check whether there is some read response available. Returns NULL on failure.
-    CoDRAMResponse *check_read_response();
-    // Check whether there is some write response available. Returns NULL on failure.
-    CoDRAMResponse *check_write_response();
-
-private:
-    int latency;
-    std::list<CoDRAMResponse*> resp_list;
-    CoDRAMResponse *check_response(bool is_write);
-};
 
 class ComplexCoDRAMsim3 : public CoDRAMsim3 {
 public:
@@ -83,24 +72,24 @@ public:
     // Returns true on success and false on failure.
     bool will_accept(uint64_t address, bool is_write);
     // Send request to CoDRAM model.
-    bool add_request(const CoDRAMRequest *request);
+    bool add_request(const CoDRAMTrans *request);
     // Check whether there is some read response available. Returns NULL on failure.
-    CoDRAMResponse *check_read_response();
+    CoDRAMTrans *get_read_response();
     // Check whether there is some write response available. Returns NULL on failure.
-    CoDRAMResponse *check_write_response();
+    CoDRAMTrans *get_write_response();
+
+    bool check_read_response();
+    bool check_write_response();
 
 private:
-    // CPU runs at 2GHz and DRAM runs at 1200MHz
-    const double CPU_FREQ_SCALE = 2000.0 / 1200.0;
-    uint64_t padding = 0;
 
-    std::list<CoDRAMResponse*> req_list;
-    std::queue<CoDRAMResponse*> resp_read_queue;
-    std::queue<CoDRAMResponse*> resp_write_queue;
+    std::list<CoDRAMTrans*> req_list;
+    std::queue<CoDRAMTrans*> resp_read_queue;
+    std::queue<CoDRAMTrans*> resp_write_queue;
 
     void callback(uint64_t addr, bool is_write);
     // Check whether there is some response in the queue. Returns NULL on failure.
-    CoDRAMResponse *check_response(std::queue<CoDRAMResponse*> &resp_queue);
+    bool check_response(std::queue<CoDRAMTrans*> &resp_queue);
 };
 
 #endif

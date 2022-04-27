@@ -6,23 +6,17 @@
 
 ComplexCoDRAMsim3 *dramsim;
 
-struct dramsim3_meta{
-    uint8_t len;
-    uint8_t size;
-    uint8_t offset;
-    uint8_t id;
-    uint64_t data[8];
-};
 
 JNIEXPORT void JNICALL Java_DramSimulator_DramSimulator_init
 (JNIEnv *env , jobject obj, jstring configFile, jstring outputDir){
     const char *configFileName = env->GetStringUTFChars(configFile, NULL);
     const char *outputDIrName = env->GetStringUTFChars(outputDir,NULL);
 
-
     dramsim = new ComplexCoDRAMsim3(configFileName,outputDIrName);
+
     env->ReleaseStringUTFChars(configFile,configFileName);
     env->ReleaseStringUTFChars(outputDir,outputDIrName);
+
 }
 
 JNIEXPORT void JNICALL Java_DramSimulator_DramSimulator_delete
@@ -40,6 +34,47 @@ JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_will_1accept
    bool result =  dramsim->will_accept(address,is_write);
    return (jboolean)result;
 }
+jobject constructResponse(JNIEnv *env, jobject obj, CoDRAMTrans* response){
+    jboolean is_write;
+    jlong address, id;
+    jint burstLength, burstType, dramBurstLength, dramBurstOffset;
+
+    if(response == NULL){
+        is_write = false;
+        address = 0;
+        id = 0 ;
+        burstLength = 0;
+        burstType = 0;
+        dramBurstOffset = 0;
+        dramBurstLength = 0;
+    } else{
+        is_write = response->is_write;
+        address = response->address;
+        id = response->id;
+        burstLength = response->burstLength;
+        burstType = response->burstType;
+        dramBurstLength = response->dramBurstLength;
+        dramBurstOffset = response->dramBurstOffset;
+    }
+    jclass thisClass = env->GetObjectClass(obj);
+    jmethodID ConstructResponseId = env->GetMethodID(thisClass,"constructResponse","(JZJIIII)LDramSimulator/DramTrans;");
+    jobject responseObj = env->CallObjectMethod(obj,ConstructResponseId,
+                                                address,is_write,id,burstLength,burstType,dramBurstLength, dramBurstOffset);
+
+    return responseObj;
+}
+
+JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_get_1write_1response
+        (JNIEnv * env, jobject obj){
+    CoDRAMTrans* response = dramsim->get_write_response();
+    return (jobject) constructResponse(env, obj, response);
+}
+
+JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_get_1read_1response
+        (JNIEnv * env, jobject obj){
+    CoDRAMTrans* response = dramsim->get_read_response();
+    return (jobject) constructResponse(env, obj, response);
+}
 
 
 JNIEXPORT jlong JNICALL Java_DramSimulator_DramSimulator_get_1clock_1ticks
@@ -47,83 +82,15 @@ JNIEXPORT jlong JNICALL Java_DramSimulator_DramSimulator_get_1clock_1ticks
     return (jlong)(dramsim->get_clock_ticks());
 }
 
-jobject constructResponse(JNIEnv *env, jobject obj, CoDRAMResponse* response){
-    jboolean req_valid,resp_valid,is_write;
-    jlong address, req_time, resp_time, finish_time;
-    jint len,size,offset,id;
-    jbyte data[64];
-    jbyteArray metaData = env->NewByteArray(64);
 
-    if(response == NULL){
-        req_valid = false;
-        resp_valid = false;
-        is_write = false;
-        address = 0;
-        req_time = 0;
-        resp_time = 0;
-        finish_time = 0;
-        len = 0 ;
-        size = 0 ;
-        offset = 0 ;
-        id = 0 ;
-        memset(data,0,64);
-    } else{
-        resp_valid = true;
-        req_time = response->req_time;
-        resp_time = response->resp_time;
-        finish_time = response->finish_time;
-        const CoDRAMRequest* request = response->req;
-        if(request == NULL){
-            req_valid = false;
-            address = 0;
-            is_write = 0;
-            len = 0;
-            size = 0;
-            offset = 0;
-            id = 0;
-            memset(data, 0, 64);
-        }else{
-            req_valid = true;
-            address = request->address;
-            is_write = request->is_write;
-            struct dramsim3_meta* meta = (struct dramsim3_meta*) request->meta;
-            if(meta == NULL){
-                len = 0;
-                size = 0;
-                offset = 0;
-                id = 0;
-                memset(data, 0, 64);
-            }else{
-                len = meta->len;
-                size = meta->size;
-                offset = meta->offset;
-                id = meta->id;
-                memcpy(data,meta->data,64);
-            }
-        }
-    }
-    env->SetByteArrayRegion(metaData,0,64,data);
-    jclass thisClass = env->GetObjectClass(obj);
-    jmethodID ConstructResponseId = env->GetMethodID(thisClass,"constructResponse","(ZZJZIIII[BJJJ)LDramSimulator/DramResponse;");
-    jobject responseObj = env->CallObjectMethod(obj,ConstructResponseId,
-                                                req_valid,resp_valid,
-                                                address, is_write,
-                                                len,size,offset,id,metaData,
-                                                req_time,resp_time,finish_time);
-
-    return responseObj;
-}
-JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_check_1write_1response
+JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_check_1write_1response
         (JNIEnv *env, jobject obj){
-    CoDRAMResponse* response = dramsim->check_write_response();
-    return constructResponse(env,obj,response);
+    return (jboolean) dramsim->check_write_response();
 }
 
-
-JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_check_1read_1response
+JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_check_1read_1response
         (JNIEnv *env, jobject obj){
-    CoDRAMResponse* response = dramsim->check_read_response();
-    return constructResponse(env,obj,response);
+    return (jboolean) dramsim->check_read_response();
 }
 
 JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_add_1request
@@ -131,8 +98,6 @@ JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_add_1request
 
     jclass requestClass = env->GetObjectClass(req);
 
-    jfieldID validFieldId = env->GetFieldID(requestClass,"valid","Z");
-    jboolean valid = env->GetBooleanField(req,validFieldId);
 
     jfieldID addressFieldId = env->GetFieldID(requestClass,"address","J");
     jlong address = env->GetLongField(req,addressFieldId);
@@ -140,19 +105,23 @@ JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_add_1request
     jfieldID is_writeFieldId = env->GetFieldID(requestClass,"is_write","Z");
     jboolean is_write = env->GetBooleanField(req,is_writeFieldId);
 
-    jfieldID lenFieldId = env->GetFieldID(requestClass,"len","I");
-    jint len = env->GetIntField(req,lenFieldId);
+    jfieldID idFieldId = env->GetFieldID(requestClass,"id","J");
+    jlong id = env->GetLongField(req,idFieldId);
 
-    jfieldID sizeFieldId = env->GetFieldID(requestClass,"size","I");
-    jint size = env->GetIntField(req,sizeFieldId);
+    jfieldID burstLengthFieldId = env->GetFieldID(requestClass,"burstLength","I");
+    jint burstLength = env->GetIntField(req,burstLengthFieldId);
 
-    jfieldID offsetFieldId = env->GetFieldID(requestClass,"offset","I");
-    jint offset = env->GetIntField(req,offsetFieldId);
+    jfieldID burstTypeFieldId = env->GetFieldID(requestClass,"burstType","I");
+    jint burstType = env->GetIntField(req,burstTypeFieldId);
 
-    jfieldID idFieldId = env->GetFieldID(requestClass,"id","I");
-    jint id = env->GetIntField(req,idFieldId);
+    jfieldID dramBurstOffsetFieldId = env->GetFieldID(requestClass,"dramBurstOffset","I");
+    jint dramBurstOffset = env->GetIntField(req,dramBurstOffsetFieldId);
 
-    CoDRAMRequest* DramRequest = new CoDRAMRequest(address,is_write);
+    jfieldID dramBurstLengthFieldId = env->GetFieldID(requestClass,"dramBurstLength","I");
+    jint dramBurstLength = env->GetIntField(req,dramBurstLengthFieldId);
+
+
+    CoDRAMTrans* DramRequest = new CoDRAMTrans(address,is_write,id,burstLength,burstType,dramBurstLength,dramBurstOffset);
 
     return (jboolean) dramsim->add_request(DramRequest);
 

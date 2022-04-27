@@ -42,7 +42,7 @@ JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_will_1accept
 /*
  * Class:     DramSimulator_DramSimulator
  * Method:    add_request
- * Signature: (LDramSimulator/DramRequest;)Z
+ * Signature: (LDramSimulator/DramTrans;)Z
  */
 JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_add_1request
   (JNIEnv *, jobject, jobject);
@@ -50,17 +50,33 @@ JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_add_1request
 /*
  * Class:     DramSimulator_DramSimulator
  * Method:    check_read_response
- * Signature: ()LDramSimulator/DramResponse;
+ * Signature: ()Z
  */
-JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_check_1read_1response
+JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_check_1read_1response
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     DramSimulator_DramSimulator
+ * Method:    get_read_response
+ * Signature: ()LDramSimulator/DramTrans;
+ */
+JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_get_1read_1response
   (JNIEnv *, jobject);
 
 /*
  * Class:     DramSimulator_DramSimulator
  * Method:    check_write_response
- * Signature: ()LDramSimulator/DramResponse;
+ * Signature: ()Z
  */
-JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_check_1write_1response
+JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_check_1write_1response
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     DramSimulator_DramSimulator
+ * Method:    get_write_response
+ * Signature: ()LDramSimulator/DramTrans;
+ */
+JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_get_1write_1response
   (JNIEnv *, jobject);
 
 /*
