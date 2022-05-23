@@ -87,6 +87,22 @@ JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_get_1write_1response
 JNIEXPORT jlong JNICALL Java_DramSimulator_DramSimulator_get_1clock_1ticks
   (JNIEnv *, jobject);
 
+/*
+ * Class:     DramSimulator_DramSimulator
+ * Method:    debug_on
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_DramSimulator_DramSimulator_debug_1on
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     DramSimulator_DramSimulator
+ * Method:    debug_off
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_DramSimulator_DramSimulator_debug_1off
+  (JNIEnv *, jobject);
+
 #ifdef __cplusplus
 }
 #endif

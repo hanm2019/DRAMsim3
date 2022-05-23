@@ -29,6 +29,16 @@ JNIEXPORT void JNICALL Java_DramSimulator_DramSimulator_tick
     dramsim->tick();
 }
 
+JNIEXPORT void JNICALL Java_DramSimulator_DramSimulator_debug_1on
+        (JNIEnv *, jobject){
+    dramsim->debug_on();
+}
+
+JNIEXPORT void JNICALL Java_DramSimulator_DramSimulator_debug_1off
+        (JNIEnv *, jobject){
+    dramsim->debug_off();
+}
+
 JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_will_1accept
         (JNIEnv *env, jobject object, jlong address, jboolean is_write){
    bool result =  dramsim->will_accept(address,is_write);

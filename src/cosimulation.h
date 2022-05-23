@@ -80,7 +80,13 @@ public:
 
     bool check_read_response();
     bool check_write_response();
-
+    bool debug = false;
+    void debug_on(){
+        this->debug = true;
+    }
+    void debug_off(){
+        this->debug = false;
+    }
 private:
 
     std::list<CoDRAMTrans*> req_list;

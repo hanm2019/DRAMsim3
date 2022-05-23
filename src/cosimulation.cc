@@ -64,8 +64,10 @@ bool ComplexCoDRAMsim3::check_response(std::queue<CoDRAMTrans*> &resp_queue) {
 }
 
 void ComplexCoDRAMsim3::callback(uint64_t addr, bool is_write) {
-     std::cout << "cycle " << std::dec << get_clock_ticks() << " callback "
-               << "is_write " << std::dec << is_write << " addr " << std::hex << addr << std::endl;
+    if(debug){
+         std::cout << "cycle " << std::dec << get_clock_ticks() << " callback "
+                   << "is_write " << std::dec << is_write << " addr " << std::hex << addr << std::endl;
+    }
     // search for the first matched request
     auto iter = req_list.begin();
     while (iter != req_list.end()) {
