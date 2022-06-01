@@ -16,6 +16,7 @@ ComplexCoDRAMsim3::ComplexCoDRAMsim3(const std::string &config_file, const std::
 }
 
 ComplexCoDRAMsim3::~ComplexCoDRAMsim3() {
+    printf("printstat\n");
     memory->PrintStats();
     delete memory;
 }
@@ -35,32 +36,48 @@ bool ComplexCoDRAMsim3::add_request(const CoDRAMTrans *request) {
         return true;
 }
 
-bool ComplexCoDRAMsim3::check_read_response() {
-    return check_response(resp_read_queue);
+bool ComplexCoDRAMsim3::check_read_response(int id) {
+    return check_response(resp_read_list,id);
 }
 
-bool ComplexCoDRAMsim3::check_write_response() {
-    return check_response(resp_write_queue);
+bool ComplexCoDRAMsim3::check_write_response(int id) {
+    return check_response(resp_write_list,id);
 }
 
-CoDRAMTrans * ComplexCoDRAMsim3::get_write_response(){
-    CoDRAMTrans* response = resp_write_queue.front();
-    resp_write_queue.pop();
-    return response;
+CoDRAMTrans * ComplexCoDRAMsim3::get_write_response(int id){
+    auto iter = resp_write_list.begin();
+    while (iter != resp_write_list.end()) {
+        auto resp = *iter;
+        if(resp->id == id){
+            resp_write_list.erase(iter);
+            return resp;
+        }
+    }
+    return NULL;
 }
 
-CoDRAMTrans * ComplexCoDRAMsim3::get_read_response(){
-    CoDRAMTrans* response = resp_read_queue.front();
-    resp_read_queue.pop();
-    return response;
+CoDRAMTrans * ComplexCoDRAMsim3::get_read_response(int id){
+    auto iter = resp_read_list.begin();
+    while (iter != resp_read_list.end()) {
+        auto resp = *iter;
+        if(resp->id == id){
+            resp_read_list.erase(iter);
+            return resp;
+        }
+    }
+    return NULL;
 }
 
 
-bool ComplexCoDRAMsim3::check_response(std::queue<CoDRAMTrans*> &resp_queue) {
-    if (resp_queue.empty())
-        return false;
-    else
-        return true;
+bool ComplexCoDRAMsim3::check_response(std::list<CoDRAMTrans*> &resp_list,int id) {
+    auto iter = resp_list.begin();
+    while (iter != resp_list.end()) {
+        auto resp = *iter;
+        if(resp->id == id){
+            return true;
+        }
+    }
+    return false;
 }
 
 void ComplexCoDRAMsim3::callback(uint64_t addr, bool is_write) {
@@ -74,8 +91,8 @@ void ComplexCoDRAMsim3::callback(uint64_t addr, bool is_write) {
         auto resp = *iter;
         if (resp->address == addr && resp->is_write == is_write) {
             req_list.erase(iter);
-            auto &queue = (resp->is_write) ? resp_write_queue : resp_read_queue;
-            queue.push(resp);
+            auto &list = (resp->is_write) ? resp_write_list : resp_read_list;
+            list.push_back(resp);
             return;
         }
         iter++;
