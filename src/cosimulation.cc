@@ -16,7 +16,6 @@ ComplexCoDRAMsim3::ComplexCoDRAMsim3(const std::string &config_file, const std::
 }
 
 ComplexCoDRAMsim3::~ComplexCoDRAMsim3() {
-    printf("printstat\n");
     memory->PrintStats();
     delete memory;
 }
@@ -82,8 +81,7 @@ bool ComplexCoDRAMsim3::check_response(std::list<CoDRAMTrans*> &resp_list,int id
 
 void ComplexCoDRAMsim3::callback(uint64_t addr, bool is_write) {
     if(debug){
-         std::cout << "cycle " << std::dec << get_clock_ticks() << " callback "
-                   << "is_write " << std::dec << is_write << " addr " << std::hex << addr << std::endl;
+    std::cout << "[CallBack] " << std::left << std::setw(18) << std::dec << get_clock_ticks() << std::hex << addr << std::dec << " " << (is_write ? "WRITE " : "READ ") <<  std::endl;
     }
     // search for the first matched request
     auto iter = req_list.begin();

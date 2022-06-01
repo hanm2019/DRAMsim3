@@ -128,8 +128,9 @@ bool JedecDRAMSystem::WillAcceptTransaction(uint64_t hex_addr,
 bool JedecDRAMSystem::AddTransaction(uint64_t hex_addr, bool is_write) {
 // Record trace - Record address trace for debugging or other purposes
 #ifdef ADDR_TRACE
-    address_trace_ << std::hex << hex_addr << std::dec << " "
-                   << (is_write ? "WRITE " : "READ ") << clk_ << std::endl;
+    address_trace_ << clk_ << std::hex << hex_addr << std::dec << " "
+                   << (is_write ? "WRITE " : "READ ") << std::endl;
+    std::cout << "[AddTransaction] " << std::left << std::setw(18) << clk_ << std::hex << hex_addr << std::dec << " " << (is_write ? "WRITE " : "READ ") <<  std::endl;
 #endif
 
     int channel = GetChannel(hex_addr);
