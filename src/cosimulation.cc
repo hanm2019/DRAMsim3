@@ -12,7 +12,12 @@ ComplexCoDRAMsim3::ComplexCoDRAMsim3(const std::string &config_file, const std::
     memory = new dramsim3::MemorySystem(config_file, output_dir,
         std::bind(&ComplexCoDRAMsim3::callback, this, std::placeholders::_1, false),
         std::bind(&ComplexCoDRAMsim3::callback, this, std::placeholders::_1, true));
+    this->tck_period = (int)(1000 * (memory->GetTCK()));
     std::cout << "DRAMsim3 memory system initialized." << std::endl;
+}
+
+int ComplexCoDRAMsim3::clock_period(){
+    return this->tck_period;
 }
 
 ComplexCoDRAMsim3::~ComplexCoDRAMsim3() {

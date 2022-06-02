@@ -88,6 +88,7 @@ public:
     void debug_off(){
         this->debug = false;
     }
+    int clock_period();
 private:
 
     std::list<CoDRAMTrans*> req_list;
@@ -97,6 +98,7 @@ private:
     void callback(uint64_t addr, bool is_write);
     // Check whether there is some response in the queue. Returns NULL on failure.
     bool check_response(std::list<CoDRAMTrans*> &resp_list,int id);
+    int tck_period=0;
 };
 
 #endif

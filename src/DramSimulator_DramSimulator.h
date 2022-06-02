@@ -103,6 +103,14 @@ JNIEXPORT void JNICALL Java_DramSimulator_DramSimulator_debug_1on
 JNIEXPORT void JNICALL Java_DramSimulator_DramSimulator_debug_1off
   (JNIEnv *, jobject);
 
+/*
+ * Class:     DramSimulator_DramSimulator
+ * Method:    clock_period
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_DramSimulator_DramSimulator_clock_1period
+  (JNIEnv *, jobject);
+
 #ifdef __cplusplus
 }
 #endif

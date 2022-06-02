@@ -147,3 +147,9 @@ JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_add_1request
     return (jboolean) dramsim->add_request(DramRequest);
 
 }
+
+JNIEXPORT jint JNICALL Java_DramSimulator_DramSimulator_clock_1period
+  (  JNIEnv *env, jobject obj)
+  {
+    return (jint) dramsim->clock_period();
+  }
