@@ -56,6 +56,7 @@ CoDRAMTrans * ComplexCoDRAMsim3::get_write_response(int id){
             resp_write_list.erase(iter);
             return resp;
         }
+        iter++;
     }
     return NULL;
 }
@@ -68,6 +69,7 @@ CoDRAMTrans * ComplexCoDRAMsim3::get_read_response(int id){
             resp_read_list.erase(iter);
             return resp;
         }
+        iter++;
     }
     return NULL;
 }
@@ -80,6 +82,7 @@ bool ComplexCoDRAMsim3::check_response(std::list<CoDRAMTrans*> &resp_list,int id
         if(resp->id == id){
             return true;
         }
+        iter++;
     }
     return false;
 }
