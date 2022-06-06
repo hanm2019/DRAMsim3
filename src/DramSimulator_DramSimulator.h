@@ -50,34 +50,34 @@ JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_add_1request
 /*
  * Class:     DramSimulator_DramSimulator
  * Method:    check_read_response
- * Signature: ()Z
+ * Signature: (I)Z
  */
 JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_check_1read_1response
-  (JNIEnv *, jobject);
+  (JNIEnv *, jobject, jint);
 
 /*
  * Class:     DramSimulator_DramSimulator
  * Method:    get_read_response
- * Signature: ()LDramSimulator/DramTrans;
+ * Signature: (I)LDramSimulator/DramTrans;
  */
 JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_get_1read_1response
-  (JNIEnv *, jobject);
+  (JNIEnv *, jobject, jint);
 
 /*
  * Class:     DramSimulator_DramSimulator
  * Method:    check_write_response
- * Signature: ()Z
+ * Signature: (I)Z
  */
 JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_check_1write_1response
-  (JNIEnv *, jobject);
+  (JNIEnv *, jobject, jint);
 
 /*
  * Class:     DramSimulator_DramSimulator
  * Method:    get_write_response
- * Signature: ()LDramSimulator/DramTrans;
+ * Signature: (I)LDramSimulator/DramTrans;
  */
 JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_get_1write_1response
-  (JNIEnv *, jobject);
+  (JNIEnv *, jobject, jint);
 
 /*
  * Class:     DramSimulator_DramSimulator
@@ -101,6 +101,14 @@ JNIEXPORT void JNICALL Java_DramSimulator_DramSimulator_debug_1on
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_DramSimulator_DramSimulator_debug_1off
+  (JNIEnv *, jobject);
+
+/*
+ * Class:     DramSimulator_DramSimulator
+ * Method:    clock_period
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_DramSimulator_DramSimulator_clock_1period
   (JNIEnv *, jobject);
 
 #ifdef __cplusplus

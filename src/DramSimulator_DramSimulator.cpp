@@ -44,45 +44,52 @@ JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_will_1accept
    bool result =  dramsim->will_accept(address,is_write);
    return (jboolean)result;
 }
+
+
+
 jobject constructResponse(JNIEnv *env, jobject obj, CoDRAMTrans* response){
-    jboolean is_write;
+    jboolean is_write, last, enable, writeback;
     jlong address, id;
-    jint burstLength, burstType, dramBurstLength, dramBurstOffset;
+    jint length, uid;
+
 
     if(response == NULL){
         is_write = false;
+        last = false;
+        enable = false;
+        writeback = false;
         address = 0;
         id = 0 ;
-        burstLength = 0;
-        burstType = 0;
-        dramBurstOffset = 0;
-        dramBurstLength = 0;
+        length = 0;
+        uid = 0;
     } else{
         is_write = response->is_write;
         address = response->address;
         id = response->id;
-        burstLength = response->burstLength;
-        burstType = response->burstType;
-        dramBurstLength = response->dramBurstLength;
-        dramBurstOffset = response->dramBurstOffset;
+        last = response->last;
+        enable = response->enable;
+        writeback = response->writeback;
+        length = response->length;
+        uid = response->uid;
+        delete response;
     }
     jclass thisClass = env->GetObjectClass(obj);
-    jmethodID ConstructResponseId = env->GetMethodID(thisClass,"constructResponse","(JZJIIII)LDramSimulator/DramTrans;");
+    jmethodID ConstructResponseId = env->GetMethodID(thisClass,"constructResponse","(JZIIIZZZ)LDramSimulator/DramTrans;");//TODO
     jobject responseObj = env->CallObjectMethod(obj,ConstructResponseId,
-                                                address,is_write,id,burstLength,burstType,dramBurstLength, dramBurstOffset);
+                                                address,is_write,id,uid,length, last, enable, writeback);
 
     return responseObj;
 }
 
 JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_get_1write_1response
-        (JNIEnv * env, jobject obj){
-    CoDRAMTrans* response = dramsim->get_write_response();
+        (JNIEnv * env, jobject obj, jint id){
+    CoDRAMTrans* response = dramsim->get_write_response((int)id);
     return (jobject) constructResponse(env, obj, response);
 }
 
 JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_get_1read_1response
-        (JNIEnv * env, jobject obj){
-    CoDRAMTrans* response = dramsim->get_read_response();
+        (JNIEnv * env, jobject obj,jint id){
+    CoDRAMTrans* response = dramsim->get_read_response((int)id);
     return (jobject) constructResponse(env, obj, response);
 }
 
@@ -94,13 +101,13 @@ JNIEXPORT jlong JNICALL Java_DramSimulator_DramSimulator_get_1clock_1ticks
 
 
 JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_check_1write_1response
-        (JNIEnv *env, jobject obj){
-    return (jboolean) dramsim->check_write_response();
+        (JNIEnv *env, jobject obj, jint id){
+    return (jboolean) dramsim->check_write_response((int)id);
 }
 
 JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_check_1read_1response
-        (JNIEnv *env, jobject obj){
-    return (jboolean) dramsim->check_read_response();
+        (JNIEnv *env, jobject obj, jint id){
+    return (jboolean) dramsim->check_read_response((int)id);
 }
 
 JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_add_1request
@@ -115,24 +122,34 @@ JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_add_1request
     jfieldID is_writeFieldId = env->GetFieldID(requestClass,"is_write","Z");
     jboolean is_write = env->GetBooleanField(req,is_writeFieldId);
 
-    jfieldID idFieldId = env->GetFieldID(requestClass,"id","J");
-    jlong id = env->GetLongField(req,idFieldId);
+    jfieldID idFieldId = env->GetFieldID(requestClass,"id","I");
+    jint id = env->GetIntField(req,idFieldId);
 
-    jfieldID burstLengthFieldId = env->GetFieldID(requestClass,"burstLength","I");
-    jint burstLength = env->GetIntField(req,burstLengthFieldId);
+    jfieldID uidFieldId = env->GetFieldID(requestClass,"uid","I");
+    jint uid = env->GetIntField(req,uidFieldId);
 
-    jfieldID burstTypeFieldId = env->GetFieldID(requestClass,"burstType","I");
-    jint burstType = env->GetIntField(req,burstTypeFieldId);
+    jfieldID lengthFieldId = env->GetFieldID(requestClass,"length","I");
+    jint length = env->GetIntField(req,lengthFieldId);
 
-    jfieldID dramBurstOffsetFieldId = env->GetFieldID(requestClass,"dramBurstOffset","I");
-    jint dramBurstOffset = env->GetIntField(req,dramBurstOffsetFieldId);
+    jfieldID lastFieldId = env->GetFieldID(requestClass,"last","Z");
+    jboolean last = env->GetBooleanField(req,lastFieldId);
 
-    jfieldID dramBurstLengthFieldId = env->GetFieldID(requestClass,"dramBurstLength","I");
-    jint dramBurstLength = env->GetIntField(req,dramBurstLengthFieldId);
+    jfieldID enableFieldId = env->GetFieldID(requestClass,"enable","Z");
+    jboolean enable = env->GetBooleanField(req,enableFieldId);
 
+    jfieldID writebackFieldId = env->GetFieldID(requestClass,"writeback","Z");
+    jboolean writeback = env->GetBooleanField(req,writebackFieldId);
 
-    CoDRAMTrans* DramRequest = new CoDRAMTrans(address,is_write,id,burstLength,burstType,dramBurstLength,dramBurstOffset);
+    CoDRAMTrans* DramRequest = new CoDRAMTrans(address,
+    is_write,id,uid,
+    length, last, enable, writeback);
 
     return (jboolean) dramsim->add_request(DramRequest);
 
 }
+
+JNIEXPORT jint JNICALL Java_DramSimulator_DramSimulator_clock_1period
+  (  JNIEnv *env, jobject obj)
+  {
+    return (jint) dramsim->clock_period();
+  }

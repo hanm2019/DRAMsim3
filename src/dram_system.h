@@ -9,6 +9,7 @@
 #include "configuration.h"
 #include "controller.h"
 #include "timing.h"
+#include "iomanip"
 
 #ifdef THERMAL
 #include "thermal.h"
