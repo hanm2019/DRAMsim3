@@ -10,10 +10,10 @@ extern "C" {
 /*
  * Class:     DramSimulator_DramSimulator
  * Method:    init
- * Signature: (Ljava/lang/String;Ljava/lang/String;)V
+ * Signature: (Ljava/lang/String;Ljava/lang/String;I)V
  */
 JNIEXPORT void JNICALL Java_DramSimulator_DramSimulator_init
-  (JNIEnv *, jobject, jstring, jstring);
+  (JNIEnv *, jobject, jstring, jstring, jint);
 
 /*
  * Class:     DramSimulator_DramSimulator
