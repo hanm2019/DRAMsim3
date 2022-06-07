@@ -8,11 +8,11 @@ ComplexCoDRAMsim3 *dramsim;
 
 
 JNIEXPORT void JNICALL Java_DramSimulator_DramSimulator_init
-(JNIEnv *env , jobject obj, jstring configFile, jstring outputDir){
+(JNIEnv *env , jobject obj, jstring configFile, jstring outputDir, jint channelNum){
     const char *configFileName = env->GetStringUTFChars(configFile, NULL);
     const char *outputDIrName = env->GetStringUTFChars(outputDir,NULL);
 
-    dramsim = new ComplexCoDRAMsim3(configFileName,outputDIrName);
+    dramsim = new ComplexCoDRAMsim3(configFileName,outputDIrName,channelNum);
 
     env->ReleaseStringUTFChars(configFile,configFileName);
     env->ReleaseStringUTFChars(outputDir,outputDIrName);

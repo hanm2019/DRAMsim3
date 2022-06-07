@@ -35,6 +35,10 @@ public:
     }
 };
 
+struct TransQueue{
+    std::queue<CoDRAMTrans*> resp_read_queue;
+    std::queue<CoDRAMTrans*> resp_write_queue;
+};
 
 class CoDRAMsim3 {
 public:
@@ -66,7 +70,7 @@ protected:
 class ComplexCoDRAMsim3 : public CoDRAMsim3 {
 public:
     // Initialize a DRAMsim3 model.
-    ComplexCoDRAMsim3(const std::string &config_file, const std::string &output_dir);
+    ComplexCoDRAMsim3(const std::string &config_file, const std::string &output_dir, int channelNum);
     ~ComplexCoDRAMsim3();
     // Tick the DRAM model.
     void tick();
@@ -90,14 +94,11 @@ public:
     }
     int clock_period();
 private:
-
+    std::vector<struct TransQueue> transqueue;
     std::list<CoDRAMTrans*> req_list;
-    std::list<CoDRAMTrans*> resp_read_list;
-    std::list<CoDRAMTrans*> resp_write_list;
-
     void callback(uint64_t addr, bool is_write);
     // Check whether there is some response in the queue. Returns NULL on failure.
-    bool check_response(std::list<CoDRAMTrans*> &resp_list,int id);
+    bool check_response(std::queue<CoDRAMTrans*> &resp_list);
     int tck_period=0;
 };
 

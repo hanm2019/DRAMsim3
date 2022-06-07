@@ -3,8 +3,10 @@
 
 dramsim3::MemorySystem *memory = NULL;
 
-ComplexCoDRAMsim3::ComplexCoDRAMsim3(const std::string &config_file, const std::string &output_dir) {
-    if (memory) {
+ComplexCoDRAMsim3::ComplexCoDRAMsim3(const std::string &config_file, const std::string &output_dir, int channelNum):
+    transqueue(channelNum)
+{
+    if (memory || channelNum <= 0) {
         std::cout << "should only init one memory currently" << std::endl;
         abort();
     }
@@ -41,50 +43,28 @@ bool ComplexCoDRAMsim3::add_request(const CoDRAMTrans *request) {
 }
 
 bool ComplexCoDRAMsim3::check_read_response(int id) {
-    return check_response(resp_read_list,id);
+    return check_response(transqueue.at(id).resp_read_queue);
 }
 
 bool ComplexCoDRAMsim3::check_write_response(int id) {
-    return check_response(resp_write_list,id);
+    return check_response(transqueue.at(id).resp_write_queue);
 }
 
 CoDRAMTrans * ComplexCoDRAMsim3::get_write_response(int id){
-    auto iter = resp_write_list.begin();
-    while (iter != resp_write_list.end()) {
-        auto resp = *iter;
-        if(resp->id == id){
-            resp_write_list.erase(iter);
-            return resp;
-        }
-        iter++;
-    }
-    return NULL;
+    auto response = transqueue.at(id).resp_write_queue.front();
+    transqueue.at(id).resp_write_queue.pop();
+    return response;
 }
 
 CoDRAMTrans * ComplexCoDRAMsim3::get_read_response(int id){
-    auto iter = resp_read_list.begin();
-    while (iter != resp_read_list.end()) {
-        auto resp = *iter;
-        if(resp->id == id){
-            resp_read_list.erase(iter);
-            return resp;
-        }
-        iter++;
-    }
-    return NULL;
+    auto response = transqueue.at(id).resp_read_queue.front();
+    transqueue.at(id).resp_read_queue.pop();
+    return response;
 }
 
 
-bool ComplexCoDRAMsim3::check_response(std::list<CoDRAMTrans*> &resp_list,int id) {
-    auto iter = resp_list.begin();
-    while (iter != resp_list.end()) {
-        auto resp = *iter;
-        if(resp->id == id){
-            return true;
-        }
-        iter++;
-    }
-    return false;
+bool ComplexCoDRAMsim3::check_response(std::queue<CoDRAMTrans*> &resp_queue) {
+    return !resp_queue.empty();
 }
 
 void ComplexCoDRAMsim3::callback(uint64_t addr, bool is_write) {
@@ -97,8 +77,9 @@ void ComplexCoDRAMsim3::callback(uint64_t addr, bool is_write) {
         auto resp = *iter;
         if (resp->address == addr && resp->is_write == is_write) {
             req_list.erase(iter);
-            auto &list = (resp->is_write) ? resp_write_list : resp_read_list;
-            list.push_back(resp);
+            auto curQueue = transqueue.at(resp->id);
+            auto &queue = (resp->is_write) ? curQueue.resp_write_queue : curQueue.resp_read_queue;
+            queue.push(resp);
             return;
         }
         iter++;
