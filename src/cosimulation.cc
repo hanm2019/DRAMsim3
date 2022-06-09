@@ -43,11 +43,11 @@ bool ComplexCoDRAMsim3::add_request(const CoDRAMTrans *request) {
 }
 
 bool ComplexCoDRAMsim3::check_read_response(int id) {
-    return check_response(transqueue.at(id).resp_read_queue);
+    return !transqueue.at(id).resp_read_queue.empty();
 }
 
 bool ComplexCoDRAMsim3::check_write_response(int id) {
-    return check_response(transqueue.at(id).resp_write_queue);
+    return !transqueue.at(id).resp_write_queue.empty();
 }
 
 CoDRAMTrans * ComplexCoDRAMsim3::get_write_response(int id){
@@ -68,18 +68,20 @@ bool ComplexCoDRAMsim3::check_response(std::queue<CoDRAMTrans*> &resp_queue) {
 }
 
 void ComplexCoDRAMsim3::callback(uint64_t addr, bool is_write) {
-    if(debug){
-    std::cout << "[CallBack] " << std::left << std::setw(18) << std::dec << get_clock_ticks() << std::hex << addr << std::dec << " " << (is_write ? "WRITE " : "READ ") <<  std::endl;
-    }
     // search for the first matched request
     auto iter = req_list.begin();
     while (iter != req_list.end()) {
         auto resp = *iter;
         if (resp->address == addr && resp->is_write == is_write) {
+            if(debug){
+                std::cout << "[CallBack] " << std::left << std::setw(18) << std::dec << get_clock_ticks() <<" Channel:"<< resp->id <<" Addr:"<<std::hex << addr << std::dec << " " << (is_write ? "WRITE " : "READ ") <<  std::endl;
+            }
             req_list.erase(iter);
-            auto curQueue = transqueue.at(resp->id);
-            auto &queue = (resp->is_write) ? curQueue.resp_write_queue : curQueue.resp_read_queue;
-            queue.push(resp);
+            if(resp->is_write){
+                transqueue.at(resp->id).resp_write_queue.push(resp);
+            } else{
+                transqueue.at(resp->id).resp_read_queue.push(resp);
+            }
             return;
         }
         iter++;
