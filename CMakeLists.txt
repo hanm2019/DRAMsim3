@@ -26,13 +26,17 @@ add_library(json INTERFACE)
 target_include_directories(json INTERFACE ext/headers)
 
 # scala jni
-if(DEFINED ENV{JAVA_HOME})
-    message("JAVA_HOME: $ENV{JAVA_HOME}")
-else()
-    message("NOT DEFINED JAVA_HOME VARIABLES")
-endif()
 
-include_directories($ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/linux src)
+find_package(JNI REQUIRED)
+include_directories(${JAVA_INCLUDE_PATH})
+include_directories(${JAVA_INCLUDE_PATH2})
+
+#if(DEFINED ENV{JAVA_HOME})
+#    message("JAVA_HOME: $ENV{JAVA_HOME}")
+#else()
+#    message("NOT DEFINED JAVA_HOME VARIABLES")
+#endif()
+#include_directories($ENV{JAVA_HOME}/include $ENV{JAVA_HOME}/include/linux src)
 
 
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -fPIC")
