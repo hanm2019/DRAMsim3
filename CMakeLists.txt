@@ -25,9 +25,13 @@ target_include_directories(args INTERFACE ext/headers)
 add_library(json INTERFACE)
 target_include_directories(json INTERFACE ext/headers)
 
+find_package(JNI REQUIRED)
+include_directories(${JAVA_INCLUDE_PATH})
+include_directories(${JAVA_INCLUDE_PATH2})
+
 # scala jni
-set(JAVA_HOME "/usr/lib/jvm/java-8-openjdk-amd64")
-include_directories(${JAVA_HOME}/include ${JAVA_HOME}/include/linux src)
+#set(JAVA_HOME "/usr/lib/jvm/java-8-openjdk-amd64")
+#include_directories(${JAVA_HOME}/include ${JAVA_HOME}/include/linux src)
 
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -fPIC")
 
