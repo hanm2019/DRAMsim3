@@ -1,7 +1,6 @@
 #include "cosimulation.h"
-#include "memory_system.h"
 
-dramsim3::MemorySystem *memory = NULL;
+
 
 ComplexCoDRAMsim3::ComplexCoDRAMsim3(const std::string &config_file, const std::string &output_dir, int channelNum):
     transqueue(channelNum)

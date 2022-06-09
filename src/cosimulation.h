@@ -4,7 +4,7 @@
 #include <list>
 #include <queue>
 #include <string>
-
+#include "memory_system.h"
 class CoDRAMTrans {
 public:
     uint64_t address;
@@ -100,6 +100,7 @@ private:
     // Check whether there is some response in the queue. Returns NULL on failure.
     bool check_response(std::queue<CoDRAMTrans*> &resp_list);
     int tck_period=0;
+    dramsim3::MemorySystem *memory = NULL;
 };
 
 #endif
