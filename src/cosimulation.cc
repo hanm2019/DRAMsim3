@@ -35,8 +35,8 @@ bool ComplexCoDRAMsim3::will_accept(uint64_t address, bool is_write) {
     return memory->WillAcceptTransaction(address, is_write);
 }
 
-bool ComplexCoDRAMsim3::add_request(const CoDRAMTrans *request) {
-        memory->AddTransaction(request->address, request->is_write);
+bool ComplexCoDRAMsim3::add_request(const CoDRAMTrans request) {
+        memory->AddTransaction(request.address, request.is_write);
         req_list.push_back(new CoDRAMTrans(request));
         return true;
 }
@@ -49,16 +49,20 @@ bool ComplexCoDRAMsim3::check_write_response(int id) {
     return !transqueue.at(id).resp_write_queue.empty();
 }
 
-CoDRAMTrans * ComplexCoDRAMsim3::get_write_response(int id){
-    auto response = transqueue.at(id).resp_write_queue.front();
+CoDRAMTrans  ComplexCoDRAMsim3::get_write_response(int id){
+    CoDRAMTrans* response = transqueue.at(id).resp_write_queue.front();
     transqueue.at(id).resp_write_queue.pop();
-    return response;
+    CoDRAMTrans resp = CoDRAMTrans(response);
+    delete response;
+    return resp;
 }
 
-CoDRAMTrans * ComplexCoDRAMsim3::get_read_response(int id){
-    auto response = transqueue.at(id).resp_read_queue.front();
+CoDRAMTrans  ComplexCoDRAMsim3::get_read_response(int id){
+    CoDRAMTrans* response = transqueue.at(id).resp_read_queue.front();
     transqueue.at(id).resp_read_queue.pop();
-    return response;
+    CoDRAMTrans resp = CoDRAMTrans(response);
+    delete response;
+    return resp;
 }
 
 

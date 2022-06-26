@@ -48,7 +48,7 @@ public:
     // Returns true on success and false on failure.
     virtual bool will_accept(uint64_t address, bool is_write) = 0;
     // Send request to co-sim model.
-    virtual bool add_request(const CoDRAMTrans *request) = 0;
+    virtual bool add_request(const CoDRAMTrans request) = 0;
 
     // Check whether there is some read response available. Returns NULL on failure.
     virtual bool check_read_response(int id) = 0;
@@ -56,9 +56,9 @@ public:
     virtual bool check_write_response(int id) = 0;
 
     // Check whether there is some read response available. Returns NULL on failure.
-    virtual CoDRAMTrans *get_read_response(int id) = 0;
+    virtual CoDRAMTrans get_read_response(int id) = 0;
     // Check whether there is some write response available. Returns NULL on failure.
-    virtual CoDRAMTrans *get_write_response(int id) = 0;
+    virtual CoDRAMTrans get_write_response(int id) = 0;
     // Get DRAM ticks.
     inline uint64_t get_clock_ticks() { return dram_clock; }
 
@@ -77,11 +77,11 @@ public:
     // Returns true on success and false on failure.
     bool will_accept(uint64_t address, bool is_write);
     // Send request to CoDRAM model.
-    bool add_request(const CoDRAMTrans *request);
+    bool add_request(const CoDRAMTrans request);
     // Check whether there is some read response available. Returns NULL on failure.
-    CoDRAMTrans *get_read_response(int id);
+    CoDRAMTrans get_read_response(int id);
     // Check whether there is some write response available. Returns NULL on failure.
-    CoDRAMTrans *get_write_response(int id);
+    CoDRAMTrans get_write_response(int id);
 
     bool check_read_response(int id);
     bool check_write_response(int id);

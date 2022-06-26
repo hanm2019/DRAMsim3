@@ -47,32 +47,21 @@ JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_will_1accept
 
 
 
-jobject constructResponse(JNIEnv *env, jobject obj, CoDRAMTrans* response){
+jobject constructResponse(JNIEnv *env, jobject obj, CoDRAMTrans response){
     jboolean is_write, last, enable, writeback;
     jlong address, id;
     jint length, uid;
 
 
-    if(response == NULL){
-        is_write = false;
-        last = false;
-        enable = false;
-        writeback = false;
-        address = 0;
-        id = 0 ;
-        length = 0;
-        uid = 0;
-    } else{
-        is_write = response->is_write;
-        address = response->address;
-        id = response->id;
-        last = response->last;
-        enable = response->enable;
-        writeback = response->writeback;
-        length = response->length;
-        uid = response->uid;
-        delete response;
-    }
+    is_write = response.is_write;
+    address = response.address;
+    id = response.id;
+    last = response.last;
+    enable = response.enable;
+    writeback = response.writeback;
+    length = response.length;
+    uid = response.uid;
+
     jclass thisClass = env->GetObjectClass(obj);
     jmethodID ConstructResponseId = env->GetMethodID(thisClass,"constructResponse","(JZIIIZZZ)LDramSimulator/DramTrans;");//TODO
     jobject responseObj = env->CallObjectMethod(obj,ConstructResponseId,
@@ -83,13 +72,13 @@ jobject constructResponse(JNIEnv *env, jobject obj, CoDRAMTrans* response){
 
 JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_get_1write_1response
         (JNIEnv * env, jobject obj, jint id){
-    CoDRAMTrans* response = dramsim->get_write_response((int)id);
+    CoDRAMTrans response = dramsim->get_write_response((int)id);
     return (jobject) constructResponse(env, obj, response);
 }
 
 JNIEXPORT jobject JNICALL Java_DramSimulator_DramSimulator_get_1read_1response
         (JNIEnv * env, jobject obj,jint id){
-    CoDRAMTrans* response = dramsim->get_read_response((int)id);
+    CoDRAMTrans response = dramsim->get_read_response((int)id);
     return (jobject) constructResponse(env, obj, response);
 }
 
@@ -140,7 +129,7 @@ JNIEXPORT jboolean JNICALL Java_DramSimulator_DramSimulator_add_1request
     jfieldID writebackFieldId = env->GetFieldID(requestClass,"writeback","Z");
     jboolean writeback = env->GetBooleanField(req,writebackFieldId);
 
-    CoDRAMTrans* DramRequest = new CoDRAMTrans(address,
+    CoDRAMTrans DramRequest = CoDRAMTrans(address,
     is_write,id,uid,
     length, last, enable, writeback);
 
