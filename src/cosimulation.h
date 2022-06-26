@@ -33,6 +33,17 @@ public:
         this->enable = trans->enable;
         this->writeback = trans->writeback;
     }
+
+    CoDRAMTrans(const CoDRAMTrans& trans){
+        this->address = trans.address;
+        this->is_write = trans.is_write;
+        this->id = trans.id;
+        this->uid = trans.uid;
+        this->length = trans.length;
+        this->last = trans.last;
+        this->enable = trans.enable;
+        this->writeback = trans.writeback;
+    }
 };
 
 struct TransQueue{
