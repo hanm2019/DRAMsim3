@@ -56,6 +56,7 @@ add_library(DramSimulator SHARED
         src/timing.cc
         src/memory_system.cc
         src/cosimulation.cc
+        src/DramSimulator_python.cpp
         src/DramSimulator_DramSimulator.cpp
 )
 
