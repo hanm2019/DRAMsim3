@@ -26,10 +26,12 @@ add_library(json INTERFACE)
 target_include_directories(json INTERFACE ext/headers)
 
 # scala jni
-
-find_package(JNI REQUIRED)
-include_directories(${JAVA_INCLUDE_PATH})
-include_directories(${JAVA_INCLUDE_PATH2})
+option(BUILD_JNI "Whether or not to build interface for scala" OFF)
+if (${BUILD_JNI})
+    find_package(JNI REQUIRED)
+    include_directories(${JAVA_INCLUDE_PATH})
+    include_directories(${JAVA_INCLUDE_PATH2})
+endif()
 
 #if(DEFINED ENV{JAVA_HOME})
 #    message("JAVA_HOME: $ENV{JAVA_HOME}")
@@ -42,8 +44,7 @@ include_directories(${JAVA_INCLUDE_PATH2})
 set(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -fPIC")
 
 # Main DramSimulator Lib
-add_library(DramSimulator SHARED
-        src/bankstate.cc
+set (DramSimulatorMainLib src/bankstate.cc
         src/channel_state.cc
         src/command_queue.cc
         src/common.cc
@@ -55,9 +56,21 @@ add_library(DramSimulator SHARED
         src/simple_stats.cc
         src/timing.cc
         src/memory_system.cc
-        src/cosimulation.cc
-        src/DramSimulator_DramSimulator.cpp
-)
+        src/cosimulation.cc)
+
+
+
+if (${BUILD_JNI})
+    add_library(DramSimulator SHARED
+            ${DramSimulatorMainLib}
+            src/DramSimulator_DramSimulator.cpp
+            )
+else()
+    add_library(DramSimulator SHARED
+            ${DramSimulatorMainLib}
+            )
+endif()
+
 
 
 target_sources(DramSimulator
